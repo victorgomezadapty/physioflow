@@ -1,36 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PhysioFlow
 
-## Getting Started
+**AI-assisted clinical evidence scoping tool for physiotherapy.**
 
-First, run the development server:
+Turn a patient profile into a curated, quality-rated, meta-analyzed evidence brief in under 3 minutes — powered by a 6-agent pipeline that follows PRISMA methodology across 7+ free scientific databases.
+
+> ⚠️ PhysioFlow is a decision-support tool, not a substitute for a formal systematic review. All outputs are labeled and time-stamped.
+
+---
+
+## Why this exists
+
+Evidence-based physiotherapy is stuck in a bottleneck: a clinician has ~5 minutes between patients, but a proper literature search takes hours. Existing tools (PubMed, Google Scholar) return raw lists — no screening, no quality rating, no synthesis. PhysioFlow closes that gap by running the same PRISMA workflow a research assistant would, in the time a clinician actually has.
+
+---
+
+## What it does
+
+Input a patient profile (age, condition, comorbidities, goals). The pipeline:
+
+1. **Translates** the profile into a structured PICOS query
+2. **Searches** 7+ databases in parallel (PubMed, OpenAlex, Europe PMC, SciELO, ClinicalTrials.gov, medRxiv, Semantic Scholar)
+3. **Screens** results through a 3-level PRISMA pipeline with dual reviewer logic
+4. **Rates quality** using Cochrane RoB 2, PEDro, and Oxford CEBM levels
+5. **Extracts** quantitative outcomes from included studies
+6. **Meta-analyzes** using random-effects DerSimonian-Laird with Hedges' *g* — outputs SVG forest plots
+7. **Rates confidence** with GRADE and delivers a plain-language brief with citations
+
+Every step is logged and traceable back to the source paper.
+
+---
+
+## Architecture
+
+Six independent agents coordinated by a pipeline orchestrator:
+
+| Agent | Responsibility |
+|-------|----------------|
+| `picos_translator` | Patient profile → structured PICOS |
+| `search` | Parallel query across 7+ databases |
+| `screener` | 3-level PRISMA screening (title/abstract/full-text) |
+| `quality` | RoB 2 / PEDro / Oxford CEBM rating |
+| `extractor` | Quantitative outcome extraction |
+| `synthesizer` | Random-effects meta-analysis + GRADE + brief |
+
+Each agent returns strict JSON and is independently testable.
+
+---
+
+## Tech stack
+
+- **Framework:** Next.js 16 (App Router, Turbopack)
+- **Language:** TypeScript
+- **UI:** Tailwind CSS + shadcn/ui
+- **LLM:** DeepSeek API (OpenAI-compatible) for agent reasoning
+- **Statistics:** Custom random-effects meta-analysis implementation (DerSimonian-Laird, Hedges' *g*)
+- **Visualization:** SVG forest plots (no charting library dependency)
+- **Deployment:** Vercel
+
+---
+
+## Getting started
 
 ```bash
+# 1. Clone
+git clone https://github.com/victorgomezadapty/physioflow.git
+cd physioflow
+
+# 2. Install
+npm install
+
+# 3. Configure
+cp .env.example .env.local
+# Fill in DEEPSEEK_API_KEY and optional PUBMED_API_KEY / SEMANTIC_SCHOLAR_API_KEY
+
+# 4. Run
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app works without a PubMed API key — the key only raises rate limits.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project status
 
-## Learn More
+**MVP functional** — end-to-end pipeline running with real searches and real papers. Under active development toward:
 
-To learn more about Next.js, take a look at the following resources:
+- [ ] Public demo deployment
+- [ ] Editable inclusion/exclusion criteria per query
+- [ ] Session persistence and shareable briefs
+- [ ] Additional condition-specific PICOS templates
+- [ ] User-facing quality rating explanations
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See [`EXECUTION_PLAN.md`](./EXECUTION_PLAN.md) for the detailed build plan.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Design principles
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Transparency over convenience** — every claim in the output is linked to its source
+- **Honest labeling** — this is a scoping tool, not a systematic review, and it says so
+- **Bilingual by default** — Spanish patient-facing labels, English technical terms
+- **Zero patient data storage** — queries are stateless; nothing is retained server-side
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Author
+
+Built by **Víctor Andrés Gómez López** — physiotherapist, doctoral researcher in physical activity and sport, founder of [ADAPTY](https://adapty.global). Currently Head Physiotherapist at Optimo Gym (Riyadh) and building clinical AI tools full time.
+
+Contact: [LinkedIn](https://linkedin.com/in/victorgomezadapty)
+
+---
+
+## License
+
+Source available for review and evaluation. Contact the author for commercial or clinical deployment inquiries.
