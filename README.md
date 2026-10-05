@@ -20,7 +20,7 @@ Input a patient profile (age, condition, comorbidities, goals). The pipeline:
 
 1. **Translates** the profile into a structured PICOS query
 2. **Searches** 7+ databases in parallel (PubMed, OpenAlex, Europe PMC, SciELO, ClinicalTrials.gov, medRxiv, Semantic Scholar)
-3. **Screens** results through a 3-level, PRISMA-informed pipeline with dual reviewer logic
+3. **Screens** results through a 3-level, PRISMA-informed screening workflow with two model-assisted review passes
 4. **Rates quality** using Cochrane RoB 2, PEDro, and Oxford CEBM levels
 5. **Extracts** quantitative outcomes from included studies
 6. **Meta-analyzes** using random-effects DerSimonian-Laird with Hedges' *g*, then outputs SVG forest plots
@@ -40,7 +40,7 @@ Six independent agents coordinated by a pipeline orchestrator:
 |-------|----------------|
 | `picos_translator` | Patient profile to structured PICOS |
 | `search` | Parallel query across 7+ databases |
-| `screener` | 3-level PRISMA screening (title/abstract/full-text) |
+| `screener` | 3-level, PRISMA-informed model-assisted screening (title/abstract/full-text) |
 | `quality` | RoB 2 / PEDro / Oxford CEBM rating |
 | `extractor` | Quantitative outcome extraction |
 | `synthesizer` | Random-effects meta-analysis + GRADE + brief |
